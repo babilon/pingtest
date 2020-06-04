@@ -9,6 +9,8 @@ count = 0 # 0 for indefinite; > 0 for specific number
 interval = 3 # time in seconds between pings
 ipaddr = 'google.com' # ip address or domain name
 print_after = 5 # number of pings between prints/dump to log file
+ipv4 = False
+ipv6 = False
 
 buckets = (20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 250, 300, 400, 500,
 750, 1000, 1500, 2000)
@@ -75,24 +77,20 @@ def execute(command):
     output = process.communicate()[0]
     exitCode = process.returncode
 
-    if (exitCode == 0):
+    if exitCode == 0:
         return output
     else:
-        raise ProcessException(command, exitCode, output)
+        sys.stderr.write("exit with code %d\n" % exitCode)
+        return output
+
 
 def form_cmd(count=0, interval=3, ipaddr="ddg.gg"):
     cmd = 'ping '
     cnt = ('-c %d ' % count) if count > 0 else ''
     interval = ('-i %d ' % interval) if interval > 0 else ''
-    cmd += cnt + interval + ipaddr.strip()
+    cmd += cnt + ('-4 ' if ipv4 else ('-6 ' if ipv6 else '')) + interval + ipaddr.strip()
     return cmd
 
-
-#p = subprocess.run(['ping', '-c', str(count), '-i', str(interval), ipaddr],
-#    shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-#
-#for line in p.stdout:
-#    print(line)
 
 if __name__ == '__main__':
     import argparse
@@ -114,6 +112,12 @@ if __name__ == '__main__':
     parser.add_argument('-w', dest='write', action='store_true',
         default=False,
         help='Flag when set to true dumps ping output to stdout')
+    parser.add_argument('-4', dest='ipv4', action='store_true',
+        default=False,
+        help='Enable IPv4 only mode')
+    parser.add_argument('-6', dest='ipv6', action='store_true',
+        default=False,
+        help='Enable IPv6 only mode')
     args = parser.parse_args()
     count = args.count
     filename = args.filename[0]
@@ -121,5 +125,7 @@ if __name__ == '__main__':
     ipaddr = args.ipaddr[0]
     write = args.write
     print_after = args.print_after
+    ipv4 = args.ipv4
+    ipv6 = args.ipv6
 
     execute(form_cmd(count, interval, ipaddr))
