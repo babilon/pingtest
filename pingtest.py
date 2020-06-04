@@ -10,7 +10,7 @@ interval = 3 # time in seconds between pings
 ipaddr = 'google.com' # ip address or domain name
 print_after = 5 # number of pings between prints/dump to log file
 
-buckets = (50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 250, 300, 400, 500,
+buckets = (20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 250, 300, 400, 500,
 750, 1000, 1500, 2000)
 bucket_counters = [0 for n in range(len(buckets))]
 
