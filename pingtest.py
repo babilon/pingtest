@@ -112,6 +112,10 @@ if __name__ == '__main__':
     parser.add_argument('-c', dest='count', action='store', type=int,
         default=5,
         help='Number of pings; A value of 0 means indefinite.')
+    parser.add_argument('-H', dest='hours', action='store', type=int,
+        default=0,
+        help='Number of hours to ping. Non-zero computes a value for -c based \
+        on interval and invokes ping -c N')
     parser.add_argument('-p', dest='print_after', action='store', type=int,
         default=5,
         help='Number of pings to issue befer dumping latest stats to log')
@@ -125,9 +129,18 @@ if __name__ == '__main__':
         default=False,
         help='Enable IPv6 only mode')
     args = parser.parse_args()
-    count = args.count
-    filename = args.filename[0]
     interval = args.interval
+    if interval < 1:
+        interval = 1
+
+    count = args.count
+    hours = args.hours
+    if hours > 0:
+        count = int(hours * (60.0 * 60.0) / interval)
+        print("Invoking 'ping' command %d times for approx. %d hours" %
+                (count, hours))
+
+    filename = args.filename[0]
     ipaddr = args.ipaddr[0]
     write = args.write
     print_after = args.print_after
