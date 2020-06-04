@@ -16,14 +16,31 @@ buckets = (20, 30, 40, 50, 60, 70, 80, 90, 100, 120, 140, 160, 180, 200, 250, 30
 750, 1000, 1500, 2000)
 bucket_counters = [0 for n in range(len(buckets))]
 
-
-f = sys.stdout
+starttime = None
 
 def dump_to_file(s, f):
         sys.stdout.write(s)
         f.write(s)
 
+def dump_bucket_counters(sequence):
+    with open(filename, 'w') as f:
+        currenttime = datetime.datetime.now()
+        delta = currenttime - starttime
+        dump_to_file("Calculated time: %14s %s\n" %
+                (str(datetime.timedelta(seconds=sequence *
+                interval)),
+                ipaddr), f)
+        dump_to_file('Total: %10d %20s\n' % (sequence, str(delta)), f)
+        dump_to_file('_' * 80 + '\n', f)
+        for x in range(len(buckets)):
+            if bucket_counters[x] > 0:
+                dump_to_file("%5d: %10d\n" % (buckets[x],
+                        bucket_counters[x]),
+                        f)
+        dump_to_file('_' * 80 + '\n', f)
+
 def execute(command):
+    global starttime
     starttime = datetime.datetime.now() 
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     processed = 0
@@ -57,22 +74,11 @@ def execute(command):
             processed += 1
 
             if processed >= print_after:
-                with open(filename, 'w') as f:
-                    currenttime = datetime.datetime.now()
-                    delta = currenttime - starttime
-                    dump_to_file("Calculated time: %14s %s\n" %
-                            (str(datetime.timedelta(seconds=sequence *
-                            interval)),
-                            ipaddr), f)
-                    dump_to_file('Total: %10d %20s\n' % (sequence, str(delta)), f)
-                    dump_to_file('_' * 80 + '\n', f)
-                    for x in range(len(buckets)):
-                        if bucket_counters[x] > 0:
-                            dump_to_file("%5d: %10d\n" % (buckets[x],
-                                    bucket_counters[x]),
-                                    f)
-                    dump_to_file('_' * 80 + '\n', f)
+                dump_bucket_counters(sequence)
                 processed = 0
+
+    if processed > 0:
+        dump_bucket_counters(sequence)
 
     output = process.communicate()[0]
     exitCode = process.returncode
